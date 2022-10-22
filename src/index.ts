@@ -11,7 +11,7 @@ const SUBTRACTION="Subtraction";
 const MULTIPLY="Multiplication";
 const DIVISION="Division";
 
-const operations = [
+const operations: {key: string; name: string;}[] = [
     {
         key: 'A',
         name: ADDITION
@@ -32,7 +32,7 @@ const operations = [
 
 console.log(`________________________\nInstructions\n> below you can select a key or press enter to open a dropdown\n> add one or more digits seperated by commas(,)\n> number accepted, string value will be ignored \n________________________`);
 
-const initCalculator = () => {
+const initCalculator = (): void => {
 
 
     const output = (opr: number) => (
@@ -51,7 +51,7 @@ const initCalculator = () => {
         name: 'nums',
         message: 'enter digits seperated by commas(,)',
     }
-    ]).then(ans => {
+    ]).then((ans: {method: string; nums: string}) => {
         // console.log(ans)
         const digits = ans.nums.split(',');
         const nums = digits
