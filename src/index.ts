@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+import figlet from 'figlet';
+import gradient from 'gradient-string';
 import inquirer from 'inquirer';
 
 /*
@@ -6,83 +9,102 @@ import inquirer from 'inquirer';
  build - compile into fresh build folder
 */
 
-const ADDITION="Addition";
-const SUBTRACTION="Subtraction";
-const MULTIPLY="Multiplication";
-const DIVISION="Division";
+console.log(chalk.yellow('________________________'))
+console.log(chalk.magenta(`Instructions\n> below you can select one of the given method\n> number accepted, string value will be ignored`));
+console.log(chalk.yellow('________________________'))
 
-const operations: {key: string; name: string;}[] = [
-    {
-        key: 'A',
-        name: ADDITION
-    },
-    {
-        key: 'S',
-        name: SUBTRACTION
-    },
-    {
-        key: 'M',
-        name: MULTIPLY
-    },
-    {
-        key: 'D',
-        name: DIVISION
-    },
-];
+class App {
+    constructor() {
+        this.init();
+    }
 
-console.log(`________________________\nInstructions\n> below you can select a key or press enter to open a dropdown\n> add one or more digits seperated by commas(,)\n> number accepted, string value will be ignored \n________________________`);
-
-const initCalculator = (): void => {
-
-
-    const output = (opr: number) => (
-        `output: ${opr}\n_______________`
+     output = (opr: number) => (
+        `\n${chalk.green(`output: ${chalk.yellow(opr)}`)}\n_______________`
+        
     )
 
-    inquirer.prompt([
-    {
-        type: 'expand',
-        name: 'method',
-        message: 'Press enter and select a method',
-        choices: operations
-    },
-    {
-        type: 'input',
-        name: 'nums',
-        message: 'enter digits seperated by commas(,)',
-    }
-    ]).then((ans: {method: string; nums: string}) => {
-        // console.log(ans)
-        const digits = ans.nums.split(',');
-        const nums = digits
-        .map((d: string) => Number(d.trim()))
-        .filter((num: number) => !isNaN(num))
-        console.log(`${ans.method} of ${nums}`)
-        switch(ans.method) {
-            case ADDITION: 
-                let add = nums.reduce((prev: number, curr: number) => prev + curr, 0);
-                console.log(output(add));
-                break;
-            
-            case SUBTRACTION: 
-                let sub = nums.reduce((prev: number, curr: number) => curr - prev, 0);
-                console.log(output(sub));
-                break;
-            case MULTIPLY:
-                let multiply = nums.reduce((prev: number, curr: number) => curr * prev, 1);
-                console.log(output(multiply));
-                break; 
-            case DIVISION:
-                let division = nums.reduce((prev: number, curr: number) => curr / prev, 1);
-                console.log(output(division));
-                break;     
-        }
-        initCalculator();
-    }).catch(err => {
-        console.log(`OOPS: ${err}`)
-    })
+    async init(): Promise<void> {
+        const promptMethod = await inquirer.prompt([
+            {
+                type: 'rawlist',
+                name: 'method',
+                message: chalk.bgCyan("Select one of the following method: "),
+                choices: ["Substraction","Addition","Division","Multiplication"].map(m => {
+                    return {
+                        name: chalk.green(m),
+                        value: m
+                    }
+                })
+            }
+        ])
+        if(promptMethod.method) {
+            console.log();
+            const promptAmount = await inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'first',
+                    message: chalk.bgCyan(`Enter your first amount: `)
+                },
+                {
+                    type: 'input',
+                    name: 'second',
+                    message: '\n'+chalk.bgCyan(`Enter your second amount: `)
+                },
+            ]);
+            const first = Number(promptAmount.first);
+            const second = Number(promptAmount.second);
 
-    
+            if(!isNaN(first) && !isNaN(second)) {
+                switch(promptMethod.method) {
+                    case 'Addition': 
+                        let add = first + second;
+                        console.log(this.output(add));
+                        break;
+                    
+                    case 'Substraction': 
+                        let sub = first - second;
+                        console.log(this.output(sub));
+                        break;
+                    case 'Multiplication':
+                        let multiply = first * second;
+                        console.log(this.output(multiply));
+                        break; 
+                    case 'Division':
+                        let division = first / second;
+                        console.log(this.output(division));
+                        break;     
+                }
+            } else {
+                console.log(chalk.yellow('________________________'));
+                console.log(chalk.red('You entered invalid value. try again...'));
+                console.log(chalk.yellow('________________________'));
+                this.init()
+            }
+
+            if(!isNaN(first) && !isNaN(second)) {
+                const confirm = await inquirer.prompt([
+                    {
+                        type: 'confirm',
+                        name: 'confirm',
+                        message: chalk.bgCyan('Do you want to use again: ')
+                    }
+                ])
+                if(confirm.confirm) {
+                    this.init();
+                }
+            }
+        }
+    }
 }
 
-initCalculator()
+figlet.text('shahzaincalc', {
+    horizontalLayout: 'default',
+    verticalLayout: 'default',
+    width: 120,
+    whitespaceBreak: true
+}, ((err, data) => {
+    console.log('\n');
+    console.log(gradient.rainbow(data));
+    console.log('\n');
+    new App()
+}));
